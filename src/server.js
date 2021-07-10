@@ -28,13 +28,30 @@ function tokenGenerator(request, response) {
     identity = defaultIdentity;
   }
 
+  // Parse the OS from the http request
+  var os = null;
+  if (request.method == 'POST') {
+    os = request.body.os;
+  } else {
+    os = request.query.os;
+  }
+
+  if(!os) {
+    os = 'ios';
+  }
+
   // Used when generating any kind of tokens
   const accountSid = process.env.ACCOUNT_SID;
   const apiKey = process.env.API_KEY;
   const apiSecret = process.env.API_KEY_SECRET;
 
   // Used specifically for creating Voice tokens
-  const pushCredSid = process.env.PUSH_CREDENTIAL_SID;
+  var pushCredSid;
+  if (os === 'android') {
+    pushCredSid = process.env.ANDROID_PUSH_CREDENTIAL_SID;
+  } else {
+    pushCredSid = process.env.IOS_PUSH_CREDENTIAL_SID;
+  }
   const outgoingApplicationSid = process.env.APP_SID;
 
   // Create an access token which we will sign and return to the client,
@@ -82,7 +99,18 @@ function makeCall(request, response) {
       const dial = voiceResponse.dial({callerId : callerNumber});
       dial.number(to);
   } else {
-      const dial = voiceResponse.dial({callerId : callerId});
+      var from = null;
+      if (request.method == 'POST') {
+        from = request.body.from;
+      } else {
+        from = request.query.from;
+      }
+
+      if (!from) {
+        from = callerId;
+      }
+
+      const dial = voiceResponse.dial({callerId : from});
       dial.client(to);
   }
   console.log('Response:' + voiceResponse.toString());
