@@ -63,7 +63,7 @@ function tokenGenerator(request, response) {
 
   // Create an access token which we will sign and return to the client,
   // containing the grant we just created
-  const token = new AccessToken(accountSid, apiKey, apiSecret);
+  const token = new AccessToken(accountSid, apiKey, apiSecret, {identity});
   token.addGrant(voiceGrant);
   token.identity = identity;
   console.log('Token:' + token.toJwt());
